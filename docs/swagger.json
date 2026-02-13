@@ -1,0 +1,167 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API для отправки напоминаний на email",
+        "title": "TTL Email Scheduler API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "email": "support@ttl-checker.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/",
+    "paths": {
+        "/auth/sign-in": {
+            "post": {
+                "description": "Проверка прав пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Аутентификация пользователя",
+                "operationId": "sign-in",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserSignInRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/sign-up": {
+            "post": {
+                "description": "Создание нового пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Регистрация пользователя",
+                "operationId": "sign-up",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/verify-token": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Проверка почты пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Подтверждение почты пользователя",
+                "operationId": "verify",
+                "parameters": [
+                    {
+                        "description": "почта пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "handler.sendEmailRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "registered_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserSignInRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "default": "marisasha228@bk.ru"
+                },
+                "password": {
+                    "type": "string",
+                    "default": "123"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Введите: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

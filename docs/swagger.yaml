@@ -1,0 +1,113 @@
+basePath: /
+definitions:
+  handler.sendEmailRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      registered_date:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  models.UserSignInRequest:
+    properties:
+      email:
+        default: marisasha228@bk.ru
+        type: string
+      password:
+        default: "123"
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: support@ttl-checker.com
+    name: API Support
+  description: API для отправки напоминаний на email
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: TTL Email Scheduler API
+  version: "1.0"
+paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Проверка прав пользователя
+      operationId: sign-in
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSignInRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Аутентификация пользователя
+      tags:
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Создание нового пользователя
+      operationId: sign-up
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses: {}
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /auth/verify-token:
+    post:
+      consumes:
+      - application/json
+      description: Проверка почты пользователя
+      operationId: verify
+      parameters:
+      - description: почта пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.sendEmailRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Подтверждение почты пользователя
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    description: 'Введите: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
