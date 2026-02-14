@@ -79,14 +79,9 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/auth/verify-token": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Проверка почты пользователя",
+        "/auth/verify-email/send": {
+            "get": {
+                "description": "Отправка подтверждения почты пользователя",
                 "consumes": [
                     "application/json"
                 ],
@@ -96,8 +91,28 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Подтверждение почты пользователя",
-                "operationId": "verify",
+                "summary": "Проверка токена подтверждения почты пользователя",
+                "operationId": "verify-email-check",
+                "responses": {}
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Отправка подтверждения почты пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Отправка подтверждения почты пользователя",
+                "operationId": "verify-email-send",
                 "parameters": [
                     {
                         "description": "почта пользователя",
