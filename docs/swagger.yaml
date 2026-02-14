@@ -83,12 +83,23 @@ paths:
       summary: Регистрация пользователя
       tags:
       - auth
-  /auth/verify-token:
+  /auth/verify-email/send:
+    get:
+      consumes:
+      - application/json
+      description: Отправка подтверждения почты пользователя
+      operationId: verify-email-check
+      produces:
+      - application/json
+      responses: {}
+      summary: Проверка токена подтверждения почты пользователя
+      tags:
+      - auth
     post:
       consumes:
       - application/json
-      description: Проверка почты пользователя
-      operationId: verify
+      description: Отправка подтверждения почты пользователя
+      operationId: verify-email-send
       parameters:
       - description: почта пользователя
         in: body
@@ -101,7 +112,7 @@ paths:
       responses: {}
       security:
       - ApiKeyAuth: []
-      summary: Подтверждение почты пользователя
+      summary: Отправка подтверждения почты пользователя
       tags:
       - auth
 securityDefinitions:
