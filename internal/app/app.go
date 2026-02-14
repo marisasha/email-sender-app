@@ -8,6 +8,7 @@ import (
 	"github.com/marisasha/email-scheduler/internal/repository"
 	"github.com/marisasha/email-scheduler/internal/service"
 	httpserver "github.com/marisasha/email-scheduler/internal/transport/http"
+	"github.com/spf13/viper"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -25,7 +26,7 @@ func NewApp(cfg repository.Config) (*App, error) {
 		return nil, err
 	}
 
-	queue, err := email.NewEmailRepository("amqp://guest:guest@127.0.0.1:5672/", "email_queue")
+	queue, err := email.NewEmailRepository(viper.GetString("rabbitmq_url"), "email_queue")
 	if err != nil {
 		return nil, err
 	}

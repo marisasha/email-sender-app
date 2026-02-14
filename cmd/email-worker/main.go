@@ -4,19 +4,32 @@ import (
 	"github.com/marisasha/email-scheduler/internal/email"
 	"github.com/marisasha/email-scheduler/internal/logger"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
 	logger.Init()
+	if err := initConfig(); err != nil {
+		logrus.Fatal(err)
+	}
+
 	err := email.RunEmailWorker(
-		"amqp://guest:guest@127.0.0.1:5672/", // RabbitMQ URL
-		"email_queue",                        // Имя очереди
-		"smtp.mail.ru",                       // SMTP хост
-		"marisasham987@mail.ru",              // SMTP пользователь
-		"P30V3dsqeE5ScYPtF4cQ",               // SMTP пароль
-		465,                                  // SMTP порт
+		viper.GetString("rabbitmq_url"),
+		"email_queue",
+		viper.GetString("email.host"),
+		viper.GetString("email.user"),
+		viper.GetString("email.password"),
+		viper.GetInt("email.port"),
 	)
 	if err != nil {
 		logrus.Fatal(err)
 	}
+}
+
+func initConfig() error {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("configs")
+
+	return viper.ReadInConfig()
 }
