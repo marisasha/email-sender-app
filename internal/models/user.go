@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	Id             int    `json:"-" db:"id"`
 	Email          string `json:"email" db:"email" binding:"required"`
@@ -12,4 +14,11 @@ type User struct {
 type UserSignInRequest struct {
 	Email    string `json:"email" default:"marisasha228@bk.ru"`
 	Password string `json:"password" default:"123"`
+}
+
+type EmailVerification struct {
+	Id        int       `db:"id"`
+	UserId    int       `db:"user_id"`
+	Token     string    `db:"token"`
+	CreatedAt time.Time `db:"created_at"`
 }

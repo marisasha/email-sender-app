@@ -89,10 +89,30 @@ func (s *AuthService) SendEmailVerification(userId *int, userEmail *string) erro
 	job := email.EmailJob{
 		To:      *userEmail,
 		Subject: "Подтвердите Email",
-		Body:    fmt.Sprintf("Перейдите по ссылке: localhost:8000/auth/verify-email?token=%s", token),
+		Body:    fmt.Sprintf("Перейдите по ссылке: \nlocalhost:8000/auth/verify-email/check?token=%s", token),
 	}
 
 	return s.emailQueue.PublishEmail(job)
+}
+
+func (s *AuthService) CheckEmailVerification(token *string) error {
+
+	emailVerification, err := s.repos.CheckVerificationToken(token)
+	if err != nil {
+		return fmt.Errorf("invalid token : %s ", err)
+	}
+
+	if emailVerification.CreatedAt.Before(time.Now().Add(-10 * time.Minute)) {
+		return fmt.Errorf("token is expired")
+	}
+
+	err = s.repos.ChangeEmailVerificationStatus(&emailVerification.UserId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func generatePasswordHash(password string) string {

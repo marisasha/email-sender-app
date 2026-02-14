@@ -27,7 +27,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
-		auth.POST("/verify-token", h.userIdentity, h.sendEmailVerification)
+		verifyEmail := auth.Group("/verify-email")
+		{
+			verifyEmail.POST("/send", h.userIdentity, h.sendEmailVerification)
+			verifyEmail.GET("/check", h.checkEmailVerification)
+		}
 	}
 
 	// api := router.Group("/api", h.userIdentity)

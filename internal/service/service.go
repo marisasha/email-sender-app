@@ -11,6 +11,7 @@ type Authorization interface {
 	GenerateToken(username, password string) (string, error)
 	ParseToken(token string) (int, error)
 	SendEmailVerification(userId *int, email *string) error
+	CheckEmailVerification(token *string) error
 }
 
 type Service struct {

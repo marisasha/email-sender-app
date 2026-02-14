@@ -44,3 +44,25 @@ func (r *AuthMySQL) CreateEmailVerificationToken(userId *int, token *string) err
 	}
 	return nil
 }
+
+func (r *AuthMySQL) CheckVerificationToken(token *string) (*models.EmailVerification, error) {
+
+	var emailVerification models.EmailVerification
+	query := fmt.Sprintf("SELECT * FROM %s WHERE token=? ", verificationTokenTable)
+	err := r.db.Get(&emailVerification, query, *token)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emailVerification, nil
+}
+
+func (r *AuthMySQL) ChangeEmailVerificationStatus(userId *int) error {
+	query := fmt.Sprintf("UPDATE %s SET email_verified=1 WHERE id=?", userTable)
+	_, err := r.db.Exec(query, *userId)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
