@@ -25,15 +25,27 @@ func (r *AuthMySQL) CreateUser(user *models.User) error {
 
 }
 
-func (r *AuthMySQL) GetUser(username, password string) (models.User, error) {
+func (r *AuthMySQL) GetUser(username, password *string) (models.User, error) {
 
 	var user models.User
 
 	query := fmt.Sprintf("SELECT id FROM %s WHERE email=? AND password_hash=?", userTable)
-	err := r.db.Get(&user, query, username, password)
+	err := r.db.Get(&user, query, *username, *password)
 
 	return user, err
 
+}
+
+func (r *AuthMySQL) GetUserEmail(userId *int) (string, error) {
+
+	var email string
+
+	query := fmt.Sprintf("SELECT email FROM %s WHERE id=?", userTable)
+	row := r.db.QueryRow(query, userId)
+	if err := row.Scan(&email); err != nil {
+		return "", err
+	}
+	return email, nil
 }
 
 func (r *AuthMySQL) CreateEmailVerificationToken(userId *int, token *string) error {

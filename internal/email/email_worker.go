@@ -1,16 +1,16 @@
-package email
+package emailservice
 
 import (
 	"encoding/json"
 	"log"
 
+	"github.com/marisasha/email-scheduler/internal/models"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 	"gopkg.in/gomail.v2"
 )
 
 func RunEmailWorker(rabbitURL, queueName, smtpHost string, smtpUser string, smtpPass string, smtpPort int) error {
-	// Подключаемся к RabbitMQ
 	conn, err := amqp.Dial(rabbitURL)
 	if err != nil {
 		return err
@@ -26,28 +26,26 @@ func RunEmailWorker(rabbitURL, queueName, smtpHost string, smtpUser string, smtp
 	msgs, err := ch.Consume(
 		queueName,
 		"",
-		true,  // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
+		true,
+		false,
+		false,
+		false,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
 
-	logrus.Println("Email worker запущен, ждём задачи...")
+	logrus.Printf("Worker %s запущен, ждём задачи...", queueName)
 
-	// Горрутина слушает очередь
 	go func() {
 		for d := range msgs {
-			job := EmailJob{}
+			job := models.EmailJob{}
 			if err := json.Unmarshal(d.Body, &job); err != nil {
 				log.Println("Ошибка парсинга задачи:", err)
 				continue
 			}
 
-			// Отправка письма через SMTP
 			m := gomail.NewMessage()
 			m.SetHeader("From", smtpUser)
 			m.SetHeader("To", job.To)
@@ -56,14 +54,13 @@ func RunEmailWorker(rabbitURL, queueName, smtpHost string, smtpUser string, smtp
 
 			dialer := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
 			if err := dialer.DialAndSend(m); err != nil {
-				logrus.Println("Ошибка отправки письма:", err)
+				logrus.Printf("%s:Ошибка отправки письма:%s", queueName, err)
 				continue
 			}
 
-			logrus.Println("Email успешно отправлен:", job.To)
+			logrus.Printf("Воркер %s успешно отправил email по адресу: %s", queueName, job.To)
 		}
 	}()
 
-	// Блокируем main, чтобы горутина работала постоянно
 	select {}
 }

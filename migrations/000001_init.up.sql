@@ -4,7 +4,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    registered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     email_verified TINYINT(1) DEFAULT 0
 ) ENGINE=InnoDB;
 

@@ -23,6 +23,129 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/email-scheduler/reminder": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email-scheduler"
+                ],
+                "summary": "Просмотр напоминаний",
+                "operationId": "get-reminders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Статус напоминания",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/email-scheduler/reminder/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email-scheduler"
+                ],
+                "summary": "Создание нового напоминания",
+                "operationId": "reminder-create",
+                "parameters": [
+                    {
+                        "description": "Информация для напоминания",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Reminder"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/email-scheduler/reminder/create-range": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email-scheduler"
+                ],
+                "summary": "Создание временного диапазона для напоминаний",
+                "operationId": "reminder-create-range",
+                "parameters": [
+                    {
+                        "description": "Информация для создания диапазона напоминаний",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RemindersWithTimeRange"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/email-scheduler/reminder/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "email-scheduler"
+                ],
+                "summary": "Удалить напоминание",
+                "operationId": "delete-reminder",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id reminder",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Проверка прав пользователя",
@@ -81,21 +204,6 @@ const docTemplate = `{
         },
         "/auth/verify-email/send": {
             "get": {
-                "description": "Отправка подтверждения почты пользователя",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Проверка токена подтверждения почты пользователя",
-                "operationId": "verify-email-check",
-                "responses": {}
-            },
-            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -112,27 +220,67 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Отправка подтверждения почты пользователя",
-                "operationId": "verify-email-send",
-                "parameters": [
-                    {
-                        "description": "почта пользователя",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.sendEmailRequest"
-                        }
-                    }
-                ],
+                "operationId": "token-send",
                 "responses": {}
             }
         }
     },
     "definitions": {
-        "handler.sendEmailRequest": {
+        "models.Reminder": {
             "type": "object",
+            "required": [
+                "send_at",
+                "subject",
+                "text"
+            ],
             "properties": {
-                "email": {
+                "send_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "default": "pending"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.RemindersWithTimeRange": {
+            "type": "object",
+            "required": [
+                "range_end",
+                "range_start",
+                "repeat_condition",
+                "subject",
+                "text"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "range_end": {
+                    "type": "string"
+                },
+                "range_start": {
+                    "type": "string"
+                },
+                "repeat_condition": {
+                    "type": "string",
+                    "enum": [
+                        "year",
+                        "month",
+                        "week",
+                        "day"
+                    ]
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }

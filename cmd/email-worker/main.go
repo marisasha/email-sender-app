@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/marisasha/email-scheduler/internal/email"
+	emailservice "github.com/marisasha/email-scheduler/internal/email"
 	"github.com/marisasha/email-scheduler/internal/logger"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -13,17 +13,39 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	err := email.RunEmailWorker(
-		viper.GetString("rabbitmq_url"),
-		"email_queue",
-		viper.GetString("email.host"),
-		viper.GetString("email.user"),
-		viper.GetString("email.password"),
-		viper.GetInt("email.port"),
-	)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	rabbitmqUrl := viper.GetString("rabbitmq_url")
+	host := viper.GetString("email.host")
+	user := viper.GetString("email.user")
+	password := viper.GetString("email.password")
+	port := viper.GetInt("email.port")
+
+	go func() {
+		if err := emailservice.RunEmailWorker(
+			rabbitmqUrl,
+			"email_reminder",
+			host,
+			user,
+			password,
+			port,
+		); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
+
+	go func() {
+		if err := emailservice.RunEmailWorker(
+			rabbitmqUrl,
+			"email_verification",
+			host,
+			user,
+			password,
+			port,
+		); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
+
+	select {}
 }
 
 func initConfig() error {

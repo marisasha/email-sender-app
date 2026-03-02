@@ -3,12 +3,12 @@ package models
 import "time"
 
 type User struct {
-	Id             int    `json:"-" db:"id"`
-	Email          string `json:"email" db:"email" binding:"required"`
-	Password       string `json:"password" db:"password_hash" binding:"required"`
-	FirstName      string `json:"first_name" db:"first_name" binding:"required"`
-	LastName       string `json:"last_name" db:"last_name" binding:"required"`
-	RegisteredDate string `json:"registered_date" db:"registered_date"`
+	Id             int       `json:"-" db:"id"`
+	Email          string    `json:"email" db:"email" binding:"required"`
+	Password       string    `json:"password" db:"password_hash" binding:"required"`
+	FirstName      string    `json:"first_name" db:"first_name" binding:"required"`
+	LastName       string    `json:"last_name" db:"last_name" binding:"required"`
+	RegisteredDate time.Time `json:"registered_date" db:"registered_date"`
 }
 
 type UserSignInRequest struct {

@@ -51,7 +51,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.Authorization.GenerateToken(input.Email, input.Password)
+	token, err := h.services.Authorization.GenerateToken(&input.Email, &input.Password)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -72,23 +72,15 @@ type sendEmailRequest struct {
 // @ID token-send
 // @Accept json
 // @Produce json
-// @Param input body sendEmailRequest true "почта пользователя"
 // @Security ApiKeyAuth
-// @Router /auth/verify-email/send [post]
+// @Router /auth/verify-email/send [get]
 func (h *Handler) sendEmailVerification(c *gin.Context) {
 	userId, err := getUserId(c)
 	if err != nil {
 		return
 	}
 
-	var input sendEmailRequest
-
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	err = h.services.Authorization.SendEmailVerification(&userId, &input.Email)
+	err = h.services.Authorization.SendEmailVerification(&userId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -99,13 +91,6 @@ func (h *Handler) sendEmailVerification(c *gin.Context) {
 	})
 }
 
-// @Summary Проверка токена подтверждения почты пользователя
-// @Tags auth
-// @Description Отправка подтверждения почты пользователя
-// @ID token-check
-// @Accept json
-// @Produce json
-// @Router /auth/verify-email/check [get]
 func (h *Handler) checkEmailVerification(c *gin.Context) {
 	token := c.Query("token")
 

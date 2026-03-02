@@ -10,6 +10,7 @@ import (
 const (
 	userTable              = "users"
 	verificationTokenTable = "email_verification_tokens"
+	emailReminderTable     = "email_notification"
 )
 
 type Config struct {

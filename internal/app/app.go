@@ -3,8 +3,9 @@ package app
 import (
 	"context"
 
-	"github.com/marisasha/email-scheduler/internal/email"
+	emailservice "github.com/marisasha/email-scheduler/internal/email"
 	"github.com/marisasha/email-scheduler/internal/handler"
+	"github.com/marisasha/email-scheduler/internal/rabbit"
 	"github.com/marisasha/email-scheduler/internal/repository"
 	"github.com/marisasha/email-scheduler/internal/service"
 	httpserver "github.com/marisasha/email-scheduler/internal/transport/http"
@@ -14,10 +15,9 @@ import (
 )
 
 type App struct {
-	server     *httpserver.Server
-	handlers   *handler.Handler
-	db         *sqlx.DB
-	emailQueue *email.EmailRabbit
+	server   *httpserver.Server
+	handlers *handler.Handler
+	db       *sqlx.DB
 }
 
 func NewApp(cfg repository.Config) (*App, error) {
@@ -26,23 +26,25 @@ func NewApp(cfg repository.Config) (*App, error) {
 		return nil, err
 	}
 
-	queue, err := email.NewEmailRepository(viper.GetString("rabbitmq_url"), "email_queue")
+	rabbit, err := rabbit.NewRabbit(viper.GetString("rabbitmq_url"))
 	if err != nil {
 		return nil, err
 	}
+	rabbit.DeclareQueue("email_verification")
+	rabbit.DeclareQueue("email_reminder")
 
 	repos := repository.NewRepository(db)
-	emailQueue := email.NewEmail(queue)
+	emailQueue := emailservice.NewEmailService(rabbit)
 	services := service.NewService(repos, emailQueue)
 	handlers := handler.NewHandler(services)
 
 	server := new(httpserver.Server)
+	services.EmailScheduler.StartScheduler()
 
 	return &App{
-		server:     server,
-		handlers:   handlers,
-		db:         db,
-		emailQueue: queue,
+		server:   server,
+		handlers: handlers,
+		db:       db,
 	}, nil
 }
 

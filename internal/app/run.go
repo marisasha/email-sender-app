@@ -23,7 +23,7 @@ func RunWithGracefulShutdown(application *App, port string) {
 	}()
 
 	<-ctx.Done()
-	logrus.Info("Kinolog API shutting down...")
+	logrus.Info("Email Sender API shutting down...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -32,5 +32,5 @@ func RunWithGracefulShutdown(application *App, port string) {
 		logrus.Errorf("graceful shutdown failed: %s", err.Error())
 	}
 
-	logrus.Info("Kinolog API stopped")
+	logrus.Info("Email Sender API stopped")
 }

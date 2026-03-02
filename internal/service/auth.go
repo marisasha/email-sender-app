@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/marisasha/email-scheduler/internal/email"
+	emailservice "github.com/marisasha/email-scheduler/internal/email"
 	"github.com/marisasha/email-scheduler/internal/models"
 	"github.com/marisasha/email-scheduler/internal/repository"
 )
@@ -18,6 +18,7 @@ const (
 	salt       = "vfzgz25f2sdf4gsf.fsg246ydhd.gh3ilof10"
 	signingKey = "fnhj52..254nfslmnl8hfsvbnjs.2fjisg"
 	tokenTTL   = 12 * time.Hour
+	queueName  = "email_verification"
 )
 
 type tokenClaims struct {
@@ -27,10 +28,10 @@ type tokenClaims struct {
 
 type AuthService struct {
 	repos      repository.Authorization
-	emailQueue email.EmailRepository
+	emailQueue emailservice.Publisher
 }
 
-func NewAuthService(repos repository.Authorization, emailQueue email.EmailRepository) *AuthService {
+func NewAuthService(repos repository.Authorization, emailQueue emailservice.Publisher) *AuthService {
 	return &AuthService{
 		repos:      repos,
 		emailQueue: emailQueue,
@@ -38,12 +39,12 @@ func NewAuthService(repos repository.Authorization, emailQueue email.EmailReposi
 }
 
 func (s *AuthService) CreateUser(user *models.User) error {
-	user.Password = generatePasswordHash(user.Password)
+	user.Password = *generatePasswordHash(user.Password)
 	return s.repos.CreateUser(user)
 }
 
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
-	user, err := s.repos.GetUser(username, generatePasswordHash(password))
+func (s *AuthService) GenerateToken(username, password *string) (string, error) {
+	user, err := s.repos.GetUser(username, generatePasswordHash(*password))
 	if err != nil {
 		return "", err
 	}
@@ -59,8 +60,8 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 	return token.SignedString([]byte(signingKey))
 }
 
-func (s *AuthService) ParseToken(accesToken string) (int, error) {
-	token, err := jwt.ParseWithClaims(accesToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *AuthService) ParseToken(accesToken *string) (int, error) {
+	token, err := jwt.ParseWithClaims(*accesToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
@@ -78,21 +79,26 @@ func (s *AuthService) ParseToken(accesToken string) (int, error) {
 	return claims.UserId, nil
 }
 
-func (s *AuthService) SendEmailVerification(userId *int, userEmail *string) error {
+func (s *AuthService) SendEmailVerification(userId *int) error {
+
+	userEmail, err := s.repos.GetUserEmail(userId)
+	if err != nil {
+		return err
+	}
 	token := generateToken()
 
-	err := s.repos.CreateEmailVerificationToken(userId, &token)
+	err = s.repos.CreateEmailVerificationToken(userId, &token)
 	if err != nil {
 		return err
 	}
 
-	job := email.EmailJob{
-		To:      *userEmail,
+	job := models.EmailJob{
+		To:      userEmail,
 		Subject: "Подтвердите Email",
 		Body:    fmt.Sprintf("Перейдите по ссылке: \nlocalhost:8000/auth/verify-email/check?token=%s", token),
 	}
 
-	return s.emailQueue.PublishEmail(job)
+	return s.emailQueue.PublishEmail(job, queueName)
 }
 
 func (s *AuthService) CheckEmailVerification(token *string) error {
@@ -115,11 +121,11 @@ func (s *AuthService) CheckEmailVerification(token *string) error {
 
 }
 
-func generatePasswordHash(password string) string {
+func generatePasswordHash(password string) *string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
-
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	passwordHash := fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	return &passwordHash
 }
 
 func generateToken() string {

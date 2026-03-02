@@ -1,9 +1,46 @@
 basePath: /
 definitions:
-  handler.sendEmailRequest:
+  models.Reminder:
     properties:
-      email:
+      send_at:
         type: string
+      status:
+        default: pending
+        type: string
+      subject:
+        type: string
+      text:
+        type: string
+    required:
+    - send_at
+    - subject
+    - text
+    type: object
+  models.RemindersWithTimeRange:
+    properties:
+      condition:
+        type: string
+      range_end:
+        type: string
+      range_start:
+        type: string
+      repeat_condition:
+        enum:
+        - year
+        - month
+        - week
+        - day
+        type: string
+      subject:
+        type: string
+      text:
+        type: string
+    required:
+    - range_end
+    - range_start
+    - repeat_condition
+    - subject
+    - text
     type: object
   models.User:
     properties:
@@ -45,6 +82,83 @@ info:
   title: TTL Email Scheduler API
   version: "1.0"
 paths:
+  /api/email-scheduler/reminder:
+    get:
+      consumes:
+      - application/json
+      operationId: get-reminders
+      parameters:
+      - description: Статус напоминания
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Просмотр напоминаний
+      tags:
+      - email-scheduler
+  /api/email-scheduler/reminder/create:
+    post:
+      consumes:
+      - application/json
+      operationId: reminder-create
+      parameters:
+      - description: Информация для напоминания
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.Reminder'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Создание нового напоминания
+      tags:
+      - email-scheduler
+  /api/email-scheduler/reminder/create-range:
+    post:
+      consumes:
+      - application/json
+      operationId: reminder-create-range
+      parameters:
+      - description: Информация для создания диапазона напоминаний
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.RemindersWithTimeRange'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Создание временного диапазона для напоминаний
+      tags:
+      - email-scheduler
+  /api/email-scheduler/reminder/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-reminder
+      parameters:
+      - description: Id reminder
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить напоминание
+      tags:
+      - email-scheduler
   /auth/sign-in:
     post:
       consumes:
@@ -88,25 +202,7 @@ paths:
       consumes:
       - application/json
       description: Отправка подтверждения почты пользователя
-      operationId: verify-email-check
-      produces:
-      - application/json
-      responses: {}
-      summary: Проверка токена подтверждения почты пользователя
-      tags:
-      - auth
-    post:
-      consumes:
-      - application/json
-      description: Отправка подтверждения почты пользователя
-      operationId: verify-email-send
-      parameters:
-      - description: почта пользователя
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/handler.sendEmailRequest'
+      operationId: token-send
       produces:
       - application/json
       responses: {}
