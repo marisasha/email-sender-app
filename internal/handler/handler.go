@@ -29,15 +29,24 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-in", h.signIn)
 		verifyEmail := auth.Group("/verify-email")
 		{
-			verifyEmail.POST("/send", h.userIdentity, h.sendEmailVerification)
+			verifyEmail.GET("/send", h.userIdentity, h.sendEmailVerification)
 			verifyEmail.GET("/check", h.checkEmailVerification)
 		}
 	}
 
-	// api := router.Group("/api", h.userIdentity)
-	// {
-
-	// }
+	api := router.Group("/api", h.userIdentity)
+	{
+		emailScheduler := api.Group("/email-scheduler")
+		{
+			reminder := emailScheduler.Group("/reminder")
+			{
+				reminder.POST("/create", h.createReminder)
+				reminder.POST("/create-range", h.createReminderRange)
+				reminder.GET("/", h.getReminders)
+				reminder.DELETE("/delete/:id", h.deleteReminder)
+			}
+		}
+	}
 
 	return router
 
